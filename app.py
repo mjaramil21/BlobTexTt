@@ -5,60 +5,98 @@ import re
 from googletrans import Translator
 
 
-st.set_page_config(
-    page_title="El oráculo de los poetas",
-    layout="wide"
-)
+import streamlit as st
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+import re
 
-
-st.markdown("""
+st.markdown(
+    """
     <style>
-        body {
-            background-color: #EDE8D0;
-            color: (#8B4411;
-        }
-        .main {
-            background-color: #EDE8D0 !important;
-            color: #2B2B2B !important;
-        }
-        .stApp {
-            font-family: 'Times New Roman';
-        }
-        .block-container {
-            padding-top: 2rem;
-        }
-        h1, h2, h3, h4 {
-            color: #2B2B2B;
-        }
-        .stProgress > div > div > div > div {
-            background-color: #FFB085;
-        }
-        .recuadro {
-            background-color: white;
-            color: black;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
-        }
-        button[kind="primary"] {
-            background-color: #FFD1BA !important;
-            color: #2B2B2B !important;
-            border: none !important;
-        }
-        .stButton>button {
-            background-color: #FFD1BA;
-            color: #2B2B2B;
-            font-weight: bold;
-            border-radius: 8px;
-            padding: 0.5rem 1rem;
-        }
+    @import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap');
+
+    html, body, [class*="css"]  {
+        background-image: url('image_2025-05-02_125422352.png');
+        background-size: cover;
+        background-attachment: fixed;
+        color: #f0e6d2;
+        font-family: 'Georgia', serif;
+    }
+
+    h1, h2, h3 {
+        font-family: 'UnifrakturCook', cursive;
+        color: #e8d382;
+        text-shadow: 1px 1px 3px #000000;
+    }
+
+    .stTextInput > div > div > input,
+    .stTextArea > div > textarea {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #f0e6d2;
+    }
+
+    .stButton > button {
+        background-color: #4a3f28;
+        color: #e8d382;
+        border: none;
+        border-radius: 5px;
+    }
+
+    .stButton > button:hover {
+        background-color: #7a6a4f;
+    }
+
+    .reportview-container .main footer {
+        visibility: hidden;
+    }
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
+st.markdown("<h1>🔮 El Oráculo de los Poetas 🔮</h1>", unsafe_allow_html=True)
+st.markdown("""
+*Ingresa un texto y permite que el oráculo revele los secretos escondidos entre tus palabras...*
+""")
+
+# --- Entrada del usuario ---
+text = st.text_area("📝 Ofrece tu texto al oráculo:")
+
+if text:
+    # --- Procesamiento del texto ---
+    words = re.findall(r'\w+', text.lower())
+    word_freq = {w: words.count(w) for w in set(words)}
+
+    st.markdown("## 🌌 Palabras Mágicas")
+    st.markdown("*Estas son las palabras más poderosas que emergen de tu conjuro textual:*")
+
+    # --- Nube de palabras ---
+    wordcloud = WordCloud(width=800, height=400, background_color=None, mode='RGBA',
+                          colormap='magma').generate_from_frequencies(word_freq)
+
+    fig, ax = plt.subplots()
+    ax.imshow(wordcloud, interpolation='bilinear')
+    ax.axis("off")
+    st.pyplot(fig)
+
+    st.markdown("## 📜 Profecía del Texto")
+    num_words = len(words)
+    num_sentences = len(re.findall(r'[.!?]+', text))
+    unique_words = len(set(words))
+
+    st.write(f"🔸 Número de palabras: **{num_words}**")
+    st.write(f"🔸 Número de oraciones: **{num_sentences}**")
+    st.write(f"🔸 Palabras únicas: **{unique_words}**")
+
+    st.markdown("## 🧿 Runas Repetidas")
+    sorted_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)[:10]
+    for word, freq in sorted_words:
+        st.write(f"🔹 **{word}** — {freq} veces")
+
+
 
 
 with st.sidebar:
-    st.image("owoawa.png", use_container_width=True)
+    st.image("image_2025-05-02_125422352.png", use_container_width=True)
     st.title("Opciones")
     modo = st.selectbox(
         "Selecciona el modo de entrada:",

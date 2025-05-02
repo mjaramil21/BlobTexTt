@@ -6,8 +6,7 @@ from googletrans import Translator
 
 
 st.set_page_config(
-    page_title="Analizador de Texto Simple",
-    page_icon="📊",
+    page_title="El oráculo de los poetas",
     layout="wide"
 )
 
@@ -15,15 +14,15 @@ st.set_page_config(
 st.markdown("""
     <style>
         body {
-            background-color: #E7F0FD;
-            color: #2B2B2B;
+            background-color: #EDE8D0;
+            color: (#8B4411;
         }
         .main {
-            background-color: #E7F0FD !important;
+            background-color: #EDE8D0 !important;
             color: #2B2B2B !important;
         }
         .stApp {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Times New Roman';
         }
         .block-container {
             padding-top: 2rem;

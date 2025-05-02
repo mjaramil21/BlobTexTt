@@ -6,14 +6,14 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import re
 
-# --- ESTILO DEL ORÁCULO ---
+
 st.markdown(
     """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap');
 
     html, body, [class*="css"]  {
-        background-image: url('image_2025-05-02_125422352.png');
+     background-image: url('image_2025-05-02_125422352.png');
         background-size: cover;
         background-attachment: fixed;
         color: #f9f5e5;
@@ -62,12 +62,9 @@ st.markdown(
 )
 st.markdown("<h1>🔮 El Oráculo de los Poetas 🔮</h1>", unsafe_allow_html=True)
 st.markdown("*Ingresa un texto y permite que el oráculo revele los secretos escondidos entre tus palabras...*")
-
-# --- ENTRADA DEL TEXTO ---
 text = st.text_area("📝 Ofrece tu texto al oráculo:")
-
 with st.sidebar:
-    st.image("image_2025-05-02_125422352.png ", use_container_width=True)
+    st.image("image_2025-05-02_125422352.png", use_container_width=True)
     st.title("Modo de lectura")
     modo = st.selectbox(
         "¿Cómo deseas contar tu profecía?",

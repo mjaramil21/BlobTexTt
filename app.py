@@ -62,7 +62,6 @@ st.markdown(
 )
 st.markdown("<h1>🔮 El Oráculo de los Poetas 🔮</h1>", unsafe_allow_html=True)
 st.markdown("*Ingresa un texto y permite que el oráculo revele los secretos escondidos entre tus palabras...*")
-text = st.text_area("📝 Ofrece tu texto al oráculo:")
 with st.sidebar:
     st.image("image_2025-05-02_125422352.png", use_container_width=True)
     st.title("Modo de lectura")

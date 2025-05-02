@@ -60,64 +60,128 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-# --- TÍTULO Y DESCRIPCIÓN ---
 st.markdown("<h1>🔮 El Oráculo de los Poetas 🔮</h1>", unsafe_allow_html=True)
 st.markdown("*Ingresa un texto y permite que el oráculo revele los secretos escondidos entre tus palabras...*")
 
 # --- ENTRADA DEL TEXTO ---
 text = st.text_area("📝 Ofrece tu texto al oráculo:")
 
-if text:
-    words = re.findall(r'\w+', text.lower())
-    word_freq = {w: words.count(w) for w in set(words)}
-
-    st.markdown("## 🌌 Palabras Mágicas")
-    st.markdown("*Estas son las palabras más poderosas que emergen de tu conjuro textual:*")
-
-    wordcloud = WordCloud(width=800, height=400, background_color=None, mode='RGBA',
-                          colormap='inferno').generate_from_frequencies(word_freq)
-
-    fig, ax = plt.subplots()
-    ax.imshow(wordcloud, interpolation='bilinear')
-    ax.axis("off")
-    st.pyplot(fig)
-
-    st.markdown("## 📜 Profecía del Texto")
-    num_words = len(words)
-    num_sentences = len(re.findall(r'[.!?]+', text))
-    unique_words = len(set(words))
-
-    st.write(f"🔸 Número de palabras: **{num_words}**")
-    st.write(f"🔸 Número de oraciones: **{num_sentences}**")
-    st.write(f"🔸 Palabras únicas: **{unique_words}**")
-
-    st.markdown("## 🧿 Runas Repetidas")
-    sorted_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)[:10]
-    for word, freq in sorted_words:
-        st.write(f"🔹 **{word}** — {freq} veces")
-
-# --- BARRA LATERAL ---
 with st.sidebar:
-    st.image("image_2025-05-02_125422352.png", use_container_width=True)
-    st.title("⚙️ Opciones del ritual")
-    modo = st.selectbox("Elige el método de invocación:", ["Texto directo", "Archivo de texto"])
+    st.image("image_2025-05-02_125422352.png ", use_container_width=True)
+    st.title("Modo de lectura")
+    modo = st.selectbox(
+        "¿Cómo deseas contar tu profecía?",
+        ["Escribir directamente", "Subir archivo"]
+    )
 
-# --- FUNCIONES ---
+def contar_palabras(texto):
+    stop_words = set([...])  
+    palabras = re.findall(r'\b\w+\b', texto.lower())
+    palabras_filtradas = [p for p in palabras if p not in stop_words and len(p) > 2]
+    contador = {}
+    for p in palabras_filtradas:
+        contador[p] = contador.get(p, 0) + 1
+    return dict(sorted(contador.items(), key=lambda x: x[1], reverse=True)), palabras_filtradas
+
 translator = Translator()
 
 def traducir_texto(texto):
     try:
         return translator.translate(texto, src='es', dest='en').text
     except Exception as e:
-        st.error(f"Error al traducir: {e}")
+        st.error(f"Ocurrió un error al traducir: {e}")
         return texto
 
-def contar_palabras(texto):
-    stop_words = set(["el", "la", "los", "las", "de", "y", "a", "en", "que", "es", "con", "por", "para", "una", "un"])
-    palabras = re.findall(r'\b\w+\b', texto.lower())
-    palabras_filtradas = [p for p in palabras if p not in stop_words and len(p) > 2]
-    contador = {}
-    for p in palabras_filtradas:
-       contador[p] = contador.get(p, 0) + 1
+def procesar_texto(texto):
+    texto_original = texto
+    texto_ingles = traducir_texto(texto)
+    blob = TextBlob(texto_ingles)
+    sentimiento = blob.sentiment.polarity
+    subjetividad = blob.sentiment.subjectivity
+    frases_originales = [f.strip() for f in re.split(r'[.!?]+', texto_original) if f.strip()]
+    frases_traducidas = [f.strip() for f in re.split(r'[.!?]+', texto_ingles) if f.strip()]
+    frases_combinadas = [{"original": o, "traducido": t} for o, t in zip(frases_originales, frases_traducidas)]
+    contador_palabras, palabras = contar_palabras(texto_ingles)
+    return {
+        "sentimiento": sentimiento,
+        "subjetividad": subjetividad,
+        "frases": frases_combinadas,
+        "contador_palabras": contador_palabras,
+        "palabras": palabras,
+        "texto_original": texto_original,
+        "texto_traducido": texto_ingles
+    }
 
+def crear_visualizaciones(resultados):
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Prónostico de la profecía")
+        st.progress((resultados["sentimiento"] + 1) / 2)
+        if resultados["sentimiento"] > 0.05:
+            st.success(f"✨ Tono positivo ({resultados['sentimiento']:.2f})")
+        elif resultados["sentimiento"] < -0.05:
+            st.error(f"🌧️ Tono negativo ({resultados['sentimiento']:.2f})")
+        else:
+            st.info(f"🕯️ Tono neutral ({resultados['sentimiento']:.2f})")
+
+        st.subheader("Índice de Subjetividad")
+        st.progress(resultados["subjetividad"])
+        if resultados["subjetividad"] > 0.5:
+            st.warning(f"🎭 Alta subjetividad ({resultados['subjetividad']:.2f})")
+        else:
+            st.info(f"🗂️ Objetividad predominante ({resultados['subjetividad']:.2f})")
+
+    with col2:
+        st.subheader("Runas/palabras más repetidas")
+        if resultados["contador_palabras"]:
+            df = pd.DataFrame(list(resultados["contador_palabras"].items())[:10], columns=["Palabra", "Frecuencia"])
+            st.bar_chart(df.set_index("Palabra"), use_container_width=True)
+
+    with st.container():
+        st.subheader("Transcripción paralela")
+        with st.expander("Mostrar traducción"):
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("**Texto Original (Español):**")
+                st.text(resultados["texto_original"])
+            with col2:
+                st.markdown("**Texto Traducido (Inglés):**")
+                st.text(resultados["texto_traducido"])
+
+    with st.container():
+        st.subheader("Fragmentos examinados por el oráculo")
+        for i, frase_dict in enumerate(resultados["frases"][:10], 1):
+            frase_original = frase_dict["original"]
+            frase_traducida = frase_dict["traducido"]
+            blob_frase = TextBlob(frase_traducida)
+            polaridad = blob_frase.sentiment.polarity
+            emoji = "📗" if polaridad > 0.05 else "📕" if polaridad < -0.05 else "📘"
+            st.markdown(f'<div class="recuadro">{i}. {emoji} <b>Fragmento:</b> *"{frase_original}"*<br><b>Traducción:</b> *"{frase_traducida}"* (Índice emocional: {polaridad:.2f})</div>', unsafe_allow_html=True)
+
+if modo == "Escribir directamente":
+    st.subheader("Presenta tu profecía para su análisis")
+    texto = st.text_area("Redacta tu fragmento literario", height=200, placeholder="Introduce tu texto aquí...")
+    if st.button("Analizar fragmento"):
+        if texto.strip():
+            with st.spinner("Conectando con los dioses para el análisis..."):
+                resultados = procesar_texto(texto)
+                crear_visualizaciones(resultados)
+        else:
+            st.warning("No le has dicho nada todavía al oráculo. Escribe algo primero.")
+elif modo == "Subir archivo":
+    st.subheader("Carga una profecía")
+    archivo = st.file_uploader("Archivos aceptados: .txt, .csv, .md", type=["txt", "csv", "md"])
+    if archivo is not None:
+        try:
+            contenido = archivo.getvalue().decode("utf-8")
+            with st.expander("Vista previa del archivo"):
+                st.text(contenido[:1000] + ("..." if len(contenido) > 1000 else ""))
+            if st.button("Analizar manuscrito"):
+                with st.spinner("profesando con atención..."):
+                    resultados = procesar_texto(contenido)
+                    crear_visualizaciones(resultados)
+        except Exception as e:
+            st.error(f"No se pudo analizar la profecía: {e}")
+
+st.markdown("---")
+st.markdown("Desarrollado para aquellos con un futuro incierto junto con Streamlit x TextBlob.")

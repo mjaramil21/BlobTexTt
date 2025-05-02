@@ -119,5 +119,5 @@ def contar_palabras(texto):
     palabras_filtradas = [p for p in palabras if p not in stop_words and len(p) > 2]
     contador = {}
     for p in palabras_filtradas:
-        contador[p] = contador.get(p, 0) +
+       contador[p] = contador.get(p, 0) + 1
 
